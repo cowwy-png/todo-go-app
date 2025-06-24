@@ -4,9 +4,11 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
+	"os"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "github.com/lib/pq"
 )
 
 type Task struct {
@@ -31,24 +33,32 @@ func main() {
 
 	fmt.Println("Server running at http://localhost:8080")
 	http.ListenAndServe(":8080", nil)
+
+	http.HandleFunc("/delete-task", deleteTaskHandler)
+
 }
 
 func initDB() {
+	connStr := os.Getenv("DATABASE_URL")
+	if connStr == "" {
+		log.Fatal("DATABASE_URL environment variable not set")
+	}
+
 	var err error
-	db, err = sql.Open("sqlite3", "./task.db")
+	db, err = sql.Open("postgres", connStr)
 	if err != nil {
-		panic(err)
+		log.Fatal("Error opening database:", err)
 	}
 
 	query := `
 	CREATE TABLE IF NOT EXISTS tasks (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		id SERIAL PRIMARY KEY,
 		title TEXT NOT NULL,
 		status TEXT NOT NULL
 	);`
 	_, err = db.Exec(query)
 	if err != nil {
-		panic(err)
+		log.Fatal("Error creating table:", err)
 	}
 }
 
@@ -112,11 +122,32 @@ func getAllTasks() ([]Task, error) {
 }
 
 func insertTask(title string) error {
-	_, err := db.Exec("INSERT INTO tasks (title, status) VALUES (?, ?)", title, "Not Touched")
+	_, err := db.Exec("INSERT INTO tasks (title, status) VALUES ($1, $2)", title, "Not Touched")
 	return err
 }
 
 func updateTaskStatus(id int, status string) error {
-	_, err := db.Exec("UPDATE tasks SET status = ? WHERE id = ?", status, id)
+	_, err := db.Exec("UPDATE tasks SET status = $1 WHERE id = $2", status, id)
 	return err
+}
+
+func deleteTaskHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "DELETE" {
+		http.Error(w, "Invalid method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var t Task
+	if err := json.NewDecoder(r.Body).Decode(&t); err != nil {
+		http.Error(w, err.Error(), 400)
+		return
+	}
+
+	_, err := db.Exec("DELETE FROM tasks WHERE id = $1", t.ID)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }

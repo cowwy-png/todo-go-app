@@ -42,6 +42,7 @@ function renderTask(task) {
   const buttonContainer = document.createElement("div");
   buttonContainer.className = "task-buttons";
 
+  // ✅ COMPLETE button
   const completeBtn = document.createElement("button");
   completeBtn.textContent = "Complete";
   completeBtn.className = "complete-button";
@@ -54,7 +55,7 @@ function renderTask(task) {
     }).then(loadTasks);
   };
 
-  // Optional: Delete Button (you can remove this block if not needed)
+  // ✅ DELETE button
   const deleteBtn = document.createElement("button");
   deleteBtn.textContent = "Delete";
   deleteBtn.className = "delete-button";
