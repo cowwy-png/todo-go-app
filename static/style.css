@@ -21,7 +21,15 @@ input[type="text"] {
 
 #taskInputContainer {
   margin-bottom: 20px;
+  padding: 15px;
+  background-color: #d6eaff; /* light blue box */
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
 }
+
 
 button {
   padding: 10px 15px;
