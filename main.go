@@ -12,9 +12,11 @@ import (
 )
 
 type Task struct {
-	ID     int    `json:"id"`
-	Title  string `json:"title"`
-	Status string `json:"status"`
+	ID          int    `json:"id"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Owner       string `json:"owner"`
+	Status      string `json:"status"`
 }
 
 var db *sql.DB
@@ -22,20 +24,16 @@ var db *sql.DB
 func main() {
 	initDB()
 
-	// Static file serving
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 
-	// Frontend
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "static/index.html")
 	})
 
-	// API endpoints
 	http.HandleFunc("/tasks", tasksHandler)
 	http.HandleFunc("/update-status", updateStatusHandler)
 	http.HandleFunc("/delete-task", deleteTaskHandler)
 
-	// Start server
 	fmt.Println("Server running at http://localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
@@ -56,6 +54,8 @@ func initDB() {
 	CREATE TABLE IF NOT EXISTS tasks (
 		id SERIAL PRIMARY KEY,
 		title TEXT NOT NULL,
+		description TEXT NOT NULL,
+		owner TEXT NOT NULL,
 		status TEXT NOT NULL
 	);`
 	_, err = db.Exec(query)
@@ -69,7 +69,7 @@ func tasksHandler(w http.ResponseWriter, r *http.Request) {
 	case "GET":
 		tasks, err := getAllTasks()
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			http.Error(w, err.Error(), 500)
 			return
 		}
 		json.NewEncoder(w).Encode(tasks)
@@ -77,11 +77,11 @@ func tasksHandler(w http.ResponseWriter, r *http.Request) {
 	case "POST":
 		var t Task
 		if err := json.NewDecoder(r.Body).Decode(&t); err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
+			http.Error(w, err.Error(), 400)
 			return
 		}
-		if err := insertTask(t.Title); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+		if err := insertTask(t.Title, t.Description, t.Owner); err != nil {
+			http.Error(w, err.Error(), 500)
 			return
 		}
 		w.WriteHeader(http.StatusCreated)
@@ -96,11 +96,12 @@ func updateStatusHandler(w http.ResponseWriter, r *http.Request) {
 
 	var t Task
 	if err := json.NewDecoder(r.Body).Decode(&t); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, err.Error(), 400)
 		return
 	}
-	if err := updateTaskStatus(t.ID, t.Status); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	err := updateTaskStatus(t.ID, t.Status)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
@@ -114,13 +115,13 @@ func deleteTaskHandler(w http.ResponseWriter, r *http.Request) {
 
 	var t Task
 	if err := json.NewDecoder(r.Body).Decode(&t); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, err.Error(), 400)
 		return
 	}
 
 	_, err := db.Exec("DELETE FROM tasks WHERE id = $1", t.ID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), 500)
 		return
 	}
 
@@ -128,7 +129,7 @@ func deleteTaskHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getAllTasks() ([]Task, error) {
-	rows, err := db.Query("SELECT id, title, status FROM tasks")
+	rows, err := db.Query("SELECT id, title, description, owner, status FROM tasks")
 	if err != nil {
 		return nil, err
 	}
@@ -137,7 +138,8 @@ func getAllTasks() ([]Task, error) {
 	var tasks []Task
 	for rows.Next() {
 		var t Task
-		if err := rows.Scan(&t.ID, &t.Title, &t.Status); err != nil {
+		err := rows.Scan(&t.ID, &t.Title, &t.Description, &t.Owner, &t.Status)
+		if err != nil {
 			return nil, err
 		}
 		tasks = append(tasks, t)
@@ -145,8 +147,11 @@ func getAllTasks() ([]Task, error) {
 	return tasks, nil
 }
 
-func insertTask(title string) error {
-	_, err := db.Exec("INSERT INTO tasks (title, status) VALUES ($1, $2)", title, "Not Touched")
+func insertTask(title, description, owner string) error {
+	_, err := db.Exec(
+		"INSERT INTO tasks (title, description, owner, status) VALUES ($1, $2, $3, $4)",
+		title, description, owner, "Not Touched",
+	)
 	return err
 }
 

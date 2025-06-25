@@ -15,6 +15,12 @@ input[type="text"] {
   font-size: 16px;
   border: 1px solid #ccc;
   border-radius: 4px;
+  margin-bottom: 10px; /* add spacing between inputs */
+  display: block;      /* stack inputs vertically */
+}
+
+#taskInputContainer {
+  margin-bottom: 20px; /* spacing below input container */
 }
 
 button {
@@ -64,6 +70,7 @@ button:hover {
 .task-buttons {
   display: flex;
   justify-content: space-between;
+  margin-top: 10px; /* small spacing above buttons */
 }
 
 .complete-button, .delete-button {
@@ -82,4 +89,23 @@ button:hover {
 .delete-button {
   background-color: #f44336;
   color: white;
+}
+
+/* Responsive tweaks for smaller screens */
+@media (max-width: 400px) {
+  input[type="text"] {
+    width: 100%;
+  }
+  button {
+    width: 100%;
+    margin-top: 5px;
+    margin-left: 0;
+  }
+  .task-buttons {
+    flex-direction: column;
+  }
+  .complete-button, .delete-button {
+    width: 100%;
+    margin-bottom: 5px;
+  }
 }

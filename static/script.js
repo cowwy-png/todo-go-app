@@ -11,21 +11,23 @@ function loadTasks() {
 }
 
 function addTask() {
-  const taskInput = document.getElementById("taskInput");
-  const title = taskInput.value.trim();
-  if (title === "") {
-    alert("Please input a task.");
+  const title = document.getElementById("taskTitle").value.trim();
+  const description = document.getElementById("taskDescription").value.trim();
+  const owner = document.getElementById("taskOwner").value.trim();
+
+  if (!title || !description || !owner) {
+    alert("Please fill out all fields.");
     return;
   }
 
   fetch("/tasks", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ title: title })
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ title, description, owner })
   }).then(() => {
-    taskInput.value = "";
+    document.getElementById("taskTitle").value = "";
+    document.getElementById("taskDescription").value = "";
+    document.getElementById("taskOwner").value = "";
     loadTasks();
   });
 }
@@ -37,7 +39,11 @@ function renderTask(task) {
 
   const text = document.createElement("div");
   text.className = "task-text";
-  text.textContent = task.title;
+  text.innerHTML = `
+    <strong>Title:</strong> ${task.title}<br>
+    <strong>Description:</strong> ${task.description}<br>
+    <strong>Owner:</strong> ${task.owner}
+  `;
 
   const buttonContainer = document.createElement("div");
   buttonContainer.className = "task-buttons";
@@ -55,24 +61,28 @@ function renderTask(task) {
   };
 
   const deleteBtn = document.createElement("button");
-deleteBtn.textContent = "Delete";
-deleteBtn.className = "delete-button";
-deleteBtn.onclick = () => {
-  fetch("/delete-task", {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ id: task.id })
-  })
-    .then(res => {
-      if (!res.ok) {
-        console.error("Failed to delete task");
-        alert("Could not delete task. Server error.");
-      } else {
-        loadTasks(); // Refresh task list
-      }
-    });
-};
+  deleteBtn.textContent = "Delete";
+  deleteBtn.className = "delete-button";
+  deleteBtn.onclick = () => {
+    fetch("/delete-task", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: task.id })
+    })
+      .then(res => {
+        if (!res.ok) {
+          console.error("Failed to delete task");
+          alert("Could not delete task. Server error.");
+        } else {
+          loadTasks(); // Refresh task list
+        }
+      });
+  };
 
+  buttonContainer.appendChild(completeBtn);
+  buttonContainer.appendChild(deleteBtn);
+  card.appendChild(text);
+  card.appendChild(buttonContainer);
+
+  document.getElementById("taskList").appendChild(card);
 }
