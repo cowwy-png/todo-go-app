@@ -15,12 +15,12 @@ input[type="text"] {
   font-size: 16px;
   border: 1px solid #ccc;
   border-radius: 4px;
-  margin-bottom: 10px; /* add spacing between inputs */
-  display: block;      /* stack inputs vertically */
+  margin-bottom: 10px;
+  display: block;
 }
 
 #taskInputContainer {
-  margin-bottom: 20px; /* spacing below input container */
+  margin-bottom: 20px;
 }
 
 button {
@@ -62,15 +62,17 @@ button:hover {
 
 .task-text {
   font-size: 16px;
-  font-weight: bold;
+  font-weight: normal;
+  line-height: 1.4;
   margin-bottom: 10px;
   word-wrap: break-word;
+  white-space: pre-line;
 }
 
 .task-buttons {
   display: flex;
   justify-content: space-between;
-  margin-top: 10px; /* small spacing above buttons */
+  margin-top: 10px;
 }
 
 .complete-button, .delete-button {
@@ -91,7 +93,6 @@ button:hover {
   color: white;
 }
 
-/* Responsive tweaks for smaller screens */
 @media (max-width: 400px) {
   input[type="text"] {
     width: 100%;

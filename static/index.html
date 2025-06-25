@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,13 +8,13 @@
 </head>
 <body>
   <h1>Job List</h1>
-  <input type="text" id="taskTitle" placeholder="Enter task title" />
-  <input type="text" id="taskDescription" placeholder="Enter description" />
-  <input type="text" id="taskOwner" placeholder="Enter owner name" />
-  <button onclick="addTask()">Add Task</button>
-
+  <div id="taskInputContainer">
+    <input type="text" id="taskTitle" placeholder="Enter task title" />
+    <input type="text" id="taskDescription" placeholder="Enter task description" />
+    <input type="text" id="taskOwner" placeholder="Enter owner name" />
+    <button onclick="addTask()">Add Task</button>
+  </div>
   <div id="taskList" class="task-grid"></div>
-
   <script src="/static/script.js"></script>
 </body>
 </html>

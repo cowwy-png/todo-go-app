@@ -11,23 +11,29 @@ function loadTasks() {
 }
 
 function addTask() {
-  const title = document.getElementById("taskTitle").value.trim();
-  const description = document.getElementById("taskDescription").value.trim();
-  const owner = document.getElementById("taskOwner").value.trim();
+  const titleInput = document.getElementById("taskTitle");
+  const descriptionInput = document.getElementById("taskDescription");
+  const ownerInput = document.getElementById("taskOwner");
 
-  if (!title || !description || !owner) {
+  const title = titleInput.value.trim();
+  const description = descriptionInput.value.trim();
+  const owner = ownerInput.value.trim();
+
+  if (title === "" || description === "" || owner === "") {
     alert("Please fill out all fields.");
     return;
   }
 
   fetch("/tasks", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json"
+    },
     body: JSON.stringify({ title, description, owner })
   }).then(() => {
-    document.getElementById("taskTitle").value = "";
-    document.getElementById("taskDescription").value = "";
-    document.getElementById("taskOwner").value = "";
+    titleInput.value = "";
+    descriptionInput.value = "";
+    ownerInput.value = "";
     loadTasks();
   });
 }
@@ -66,7 +72,9 @@ function renderTask(task) {
   deleteBtn.onclick = () => {
     fetch("/delete-task", {
       method: "DELETE",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify({ id: task.id })
     })
       .then(res => {
@@ -74,7 +82,7 @@ function renderTask(task) {
           console.error("Failed to delete task");
           alert("Could not delete task. Server error.");
         } else {
-          loadTasks(); // Refresh task list
+          loadTasks();
         }
       });
   };
