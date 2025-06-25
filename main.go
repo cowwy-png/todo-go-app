@@ -22,20 +22,22 @@ var db *sql.DB
 func main() {
 	initDB()
 
+	// Static file serving
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 
+	// Frontend
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "static/index.html")
 	})
 
+	// API endpoints
 	http.HandleFunc("/tasks", tasksHandler)
 	http.HandleFunc("/update-status", updateStatusHandler)
-
-	fmt.Println("Server running at http://localhost:8080")
-	http.ListenAndServe(":8080", nil)
-
 	http.HandleFunc("/delete-task", deleteTaskHandler)
 
+	// Start server
+	fmt.Println("Server running at http://localhost:8080")
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
 func initDB() {
@@ -67,7 +69,7 @@ func tasksHandler(w http.ResponseWriter, r *http.Request) {
 	case "GET":
 		tasks, err := getAllTasks()
 		if err != nil {
-			http.Error(w, err.Error(), 500)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		json.NewEncoder(w).Encode(tasks)
@@ -75,11 +77,11 @@ func tasksHandler(w http.ResponseWriter, r *http.Request) {
 	case "POST":
 		var t Task
 		if err := json.NewDecoder(r.Body).Decode(&t); err != nil {
-			http.Error(w, err.Error(), 400)
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 		if err := insertTask(t.Title); err != nil {
-			http.Error(w, err.Error(), 500)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		w.WriteHeader(http.StatusCreated)
@@ -94,14 +96,34 @@ func updateStatusHandler(w http.ResponseWriter, r *http.Request) {
 
 	var t Task
 	if err := json.NewDecoder(r.Body).Decode(&t); err != nil {
-		http.Error(w, err.Error(), 400)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	err := updateTaskStatus(t.ID, t.Status)
+	if err := updateTaskStatus(t.ID, t.Status); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+func deleteTaskHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "DELETE" {
+		http.Error(w, "Invalid method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var t Task
+	if err := json.NewDecoder(r.Body).Decode(&t); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	_, err := db.Exec("DELETE FROM tasks WHERE id = $1", t.ID)
 	if err != nil {
-		http.Error(w, err.Error(), 500)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -115,7 +137,9 @@ func getAllTasks() ([]Task, error) {
 	var tasks []Task
 	for rows.Next() {
 		var t Task
-		rows.Scan(&t.ID, &t.Title, &t.Status)
+		if err := rows.Scan(&t.ID, &t.Title, &t.Status); err != nil {
+			return nil, err
+		}
 		tasks = append(tasks, t)
 	}
 	return tasks, nil
@@ -129,25 +153,4 @@ func insertTask(title string) error {
 func updateTaskStatus(id int, status string) error {
 	_, err := db.Exec("UPDATE tasks SET status = $1 WHERE id = $2", status, id)
 	return err
-}
-
-func deleteTaskHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "DELETE" {
-		http.Error(w, "Invalid method", http.StatusMethodNotAllowed)
-		return
-	}
-
-	var t Task
-	if err := json.NewDecoder(r.Body).Decode(&t); err != nil {
-		http.Error(w, err.Error(), 400)
-		return
-	}
-
-	_, err := db.Exec("DELETE FROM tasks WHERE id = $1", t.ID)
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
 }

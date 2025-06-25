@@ -42,7 +42,6 @@ function renderTask(task) {
   const buttonContainer = document.createElement("div");
   buttonContainer.className = "task-buttons";
 
-  // ✅ COMPLETE button
   const completeBtn = document.createElement("button");
   completeBtn.textContent = "Complete";
   completeBtn.className = "complete-button";
@@ -55,22 +54,25 @@ function renderTask(task) {
     }).then(loadTasks);
   };
 
-  // ✅ DELETE button
   const deleteBtn = document.createElement("button");
-  deleteBtn.textContent = "Delete";
-  deleteBtn.className = "delete-button";
-  deleteBtn.onclick = () => {
-    fetch("/delete-task", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: task.id })
-    }).then(loadTasks);
-  };
+deleteBtn.textContent = "Delete";
+deleteBtn.className = "delete-button";
+deleteBtn.onclick = () => {
+  fetch("/delete-task", {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ id: task.id })
+  })
+    .then(res => {
+      if (!res.ok) {
+        console.error("Failed to delete task");
+        alert("Could not delete task. Server error.");
+      } else {
+        loadTasks(); // Refresh task list
+      }
+    });
+};
 
-  buttonContainer.appendChild(completeBtn);
-  buttonContainer.appendChild(deleteBtn);
-  card.appendChild(text);
-  card.appendChild(buttonContainer);
-
-  document.getElementById("taskList").appendChild(card);
 }
