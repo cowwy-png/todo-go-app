@@ -8,14 +8,59 @@ function loadTasks() {
     })
     .then(tasks => {
       if (!Array.isArray(tasks)) throw new Error("Invalid tasks data");
+
       const taskList = document.getElementById("taskList");
       taskList.innerHTML = "";
-      tasks.forEach(task => renderTask(task));
+
+      const createdDates = [];
+
+      tasks.forEach(task => {
+        renderTask(task);
+        if (task.created_at) createdDates.push(task.created_at);
+      });
+
+      renderCalendar(createdDates);
     })
     .catch(err => {
       console.error("Error loading tasks:", err);
       alert("Could not load tasks. Please check your server.");
     });
+}
+
+function renderCalendar(taskDates) {
+  const calendar = document.getElementById("calendar");
+  if (!calendar) return;
+  
+  calendar.innerHTML = "<h3>Task Calendar</h3><div class='calendar-grid'></div>";
+  const calendarGrid = calendar.querySelector('.calendar-grid');
+
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstDay = new Date(year, month, 1).getDay();
+
+  const creationDates = new Set(taskDates.map(d => new Date(d).getDate()));
+
+  // Add empty cells for days before the first day of month
+  for (let i = 0; i < firstDay; i++) {
+    const emptyDiv = document.createElement("div");
+    emptyDiv.className = "calendar-day empty";
+    calendarGrid.appendChild(emptyDiv);
+  }
+
+  // Add days of the month
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dayDiv = document.createElement("div");
+    dayDiv.className = "calendar-day";
+    dayDiv.textContent = day;
+
+    if (creationDates.has(day)) {
+      dayDiv.classList.add("has-task");
+    }
+
+    calendarGrid.appendChild(dayDiv);
+  }
 }
 
 function addTask() {
@@ -51,8 +96,7 @@ function renderTask(task) {
   card.className = "task-card";
   if (task.status === "Completed") card.classList.add("completed");
 
-  // Create inner HTML safely
-  const taskHTML = `
+  card.innerHTML = `
     <div class="task-content">
       <div class="task-text">
         <strong>Title:</strong> ${task.title}<br>
@@ -67,10 +111,7 @@ function renderTask(task) {
     </div>
   `;
 
-  card.innerHTML = taskHTML;
-
-  // Button event listeners
-  card.querySelector(".complete-button").onclick = () => {
+  card.querySelector('.complete-button').onclick = () => {
     const newStatus = task.status === "Completed" ? "Not Touched" : "Completed";
     fetch("/update-status", {
       method: "PUT",
@@ -79,7 +120,7 @@ function renderTask(task) {
     }).then(loadTasks);
   };
 
-  card.querySelector(".delete-button").onclick = () => {
+  card.querySelector('.delete-button').onclick = () => {
     fetch("/delete-task", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },

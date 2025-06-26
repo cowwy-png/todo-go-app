@@ -80,7 +80,7 @@ button:hover {
 }
 
 .task-date {
-  font-size: 12px;
+  font-size: 10px;
   color: #666;
   margin-top: 5px;
   word-wrap: break-word;
@@ -117,4 +117,39 @@ button:hover {
     width: 100%;
     margin-bottom: 5px;
   }
+}
+
+#calendarContainer {
+  padding: 15px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  width: 300px;
+  height: fit-content;
+}
+
+.calendar-day {
+  display: inline-block;
+  width: 35px;
+  height: 35px;
+  margin: 2px;
+  text-align: center;
+  line-height: 35px;
+  border-radius: 5px;
+  font-size: 12px;
+}
+
+.red {
+  background-color: #f44336;
+  color: white;
+}
+
+.blue {
+  background-color: #2196f3;
+  color: white;
+}
+
+.red-blue {
+  background: linear-gradient(to right, #f44336 50%, #2196f3 50%);
+  color: white;
 }
