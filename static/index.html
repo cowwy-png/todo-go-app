@@ -7,7 +7,9 @@
 </head>
 <body>
   <h1>Job List</h1>
+
   <div id="mainWrapper">
+    <!-- Task Input -->
     <div id="taskInputContainer">
       <input type="text" id="taskTitle" placeholder="Enter task title" />
       <input type="text" id="taskDescription" placeholder="Enter task description" />
@@ -16,6 +18,7 @@
       <button onclick="addTask()">Add Task</button>
     </div>
 
+    <!-- Calendar -->
     <div id="calendarContainer">
       <div id="calendarNav">
         <button id="prevMonth">←</button>
@@ -23,6 +26,7 @@
         <button id="nextMonth">→</button>
       </div>
       <div id="calendar"></div>
+      <button id="showAllBtn" style="margin-top: 10px; width: 100%;" onclick="showAllTasks()">Show All Tasks</button>
     </div>
   </div>
 
