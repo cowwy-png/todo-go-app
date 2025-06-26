@@ -141,7 +141,7 @@ func getAllTasks() ([]Task, error) {
 	var tasks []Task
 	for rows.Next() {
 		var t Task
-		err := rows.Scan(&t.ID, &t.Title, &t.Description, &t.Owner, &t.Status)
+		err := rows.Scan(&t.ID, &t.Title, &t.Description, &t.Owner, &t.Status, &t.CreatedAt)
 		if err != nil {
 			return nil, err
 		}
