@@ -55,10 +55,12 @@ func initDB() {
 	CREATE TABLE IF NOT EXISTS tasks (
 		id SERIAL PRIMARY KEY,
 		title TEXT NOT NULL,
-		description TEXT NOT NULL,
-		owner TEXT NOT NULL,
-		status TEXT NOT NULL
+		description TEXT,
+		owner TEXT,
+		status TEXT NOT NULL,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 	);`
+
 	_, err = db.Exec(query)
 	if err != nil {
 		log.Fatal("Error creating table:", err)
