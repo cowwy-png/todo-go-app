@@ -2,13 +2,22 @@ document.addEventListener("DOMContentLoaded", loadTasks);
 
 function loadTasks() {
   fetch("/tasks")
-    .then(res => res.json())
+    .then(res => {
+      if (!res.ok) throw new Error("Failed to fetch tasks");
+      return res.json();
+    })
     .then(tasks => {
+      if (!Array.isArray(tasks)) throw new Error("Invalid tasks data");
       const taskList = document.getElementById("taskList");
       taskList.innerHTML = "";
       tasks.forEach(task => renderTask(task));
+    })
+    .catch(err => {
+      console.error("Error loading tasks:", err);
+      alert("Could not load tasks. Please check your server.");
     });
 }
+
 
 function addTask() {
   const titleInput = document.getElementById("taskTitle");
