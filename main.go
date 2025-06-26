@@ -17,6 +17,7 @@ type Task struct {
 	Description string `json:"description"`
 	Owner       string `json:"owner"`
 	Status      string `json:"status"`
+	CreatedAt   string `json:"created_at"`
 }
 
 var db *sql.DB
@@ -129,7 +130,7 @@ func deleteTaskHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getAllTasks() ([]Task, error) {
-	rows, err := db.Query("SELECT id, title, description, owner, status FROM tasks")
+	rows, err := db.Query("SELECT id, title, description, owner, status, created_at FROM tasks")
 	if err != nil {
 		return nil, err
 	}

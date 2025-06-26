@@ -51,6 +51,10 @@ function renderTask(task) {
     <strong>Owner:</strong> ${task.owner}
   `;
 
+  const date = document.createElement("div");
+  date.className = "task-date";
+  date.textContent = `Created: ${new Date(task.created_at).toLocaleDateString()}`;
+
   const buttonContainer = document.createElement("div");
   buttonContainer.className = "task-buttons";
 
@@ -89,8 +93,11 @@ function renderTask(task) {
 
   buttonContainer.appendChild(completeBtn);
   buttonContainer.appendChild(deleteBtn);
+
   card.appendChild(text);
+  card.appendChild(date);
   card.appendChild(buttonContainer);
 
   document.getElementById("taskList").appendChild(card);
 }
+
