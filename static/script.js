@@ -18,7 +18,6 @@ function loadTasks() {
     });
 }
 
-
 function addTask() {
   const titleInput = document.getElementById("taskTitle");
   const descriptionInput = document.getElementById("taskDescription");
@@ -52,25 +51,22 @@ function renderTask(task) {
   card.className = "task-card";
   if (task.status === "Completed") card.classList.add("completed");
 
-  const text = document.createElement("div");
-  text.className = "task-text";
-  text.innerHTML = `
-    <strong>Title:</strong> ${task.title}<br>
-    <strong>Description:</strong> ${task.description}<br>
-    <strong>Owner:</strong> ${task.owner}
+  card.innerHTML = `
+    <div class="task-content">
+      <div class="task-text">
+        <strong>Title:</strong> ${task.title}<br>
+        <strong>Description:</strong> ${task.description}<br>
+        <strong>Owner:</strong> ${task.owner}<br>
+        <div class="task-date">Created: ${new Date(task.created_at).toLocaleDateString()}</div>
+      </div>
+    </div>
+    <div class="task-buttons">
+      <button class="complete-button">Complete</button>
+      <button class="delete-button">Delete</button>
+    </div>
   `;
 
-  const date = document.createElement("div");
-  date.className = "task-date";
-  date.textContent = `Created: ${new Date(task.created_at).toLocaleDateString()}`;
-
-  const buttonContainer = document.createElement("div");
-  buttonContainer.className = "task-buttons";
-
-  const completeBtn = document.createElement("button");
-  completeBtn.textContent = "Complete";
-  completeBtn.className = "complete-button";
-  completeBtn.onclick = () => {
+  card.querySelector('.complete-button').onclick = () => {
     const newStatus = task.status === "Completed" ? "Not Touched" : "Completed";
     fetch("/update-status", {
       method: "PUT",
@@ -79,34 +75,13 @@ function renderTask(task) {
     }).then(loadTasks);
   };
 
-  const deleteBtn = document.createElement("button");
-  deleteBtn.textContent = "Delete";
-  deleteBtn.className = "delete-button";
-  deleteBtn.onclick = () => {
+  card.querySelector('.delete-button').onclick = () => {
     fetch("/delete-task", {
       method: "DELETE",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: task.id })
-    })
-      .then(res => {
-        if (!res.ok) {
-          console.error("Failed to delete task");
-          alert("Could not delete task. Server error.");
-        } else {
-          loadTasks();
-        }
-      });
+    }).then(loadTasks);
   };
-
-  buttonContainer.appendChild(completeBtn);
-  buttonContainer.appendChild(deleteBtn);
-
-  card.appendChild(text);
-  card.appendChild(date);
-  card.appendChild(buttonContainer);
 
   document.getElementById("taskList").appendChild(card);
 }
-
