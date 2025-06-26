@@ -153,3 +153,22 @@ button:hover {
   background: linear-gradient(to right, #f44336 50%, #2196f3 50%);
   color: white;
 }
+
+#inputAndCalendarWrapper {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+#calendar {
+  margin-top: 10px;
+}
+
+.calendar-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 10px;
+}
