@@ -51,13 +51,14 @@ function renderTask(task) {
   card.className = "task-card";
   if (task.status === "Completed") card.classList.add("completed");
 
-  card.innerHTML = `
+  // Create inner HTML safely
+  const taskHTML = `
     <div class="task-content">
       <div class="task-text">
         <strong>Title:</strong> ${task.title}<br>
         <strong>Description:</strong> ${task.description}<br>
         <strong>Owner:</strong> ${task.owner}<br>
-        <div class="task-date">Created: ${new Date(task.created_at).toLocaleDateString()}</div>
+        <div class="task-date"><strong>Created:</strong> ${new Date(task.created_at).toLocaleDateString()}</div>
       </div>
     </div>
     <div class="task-buttons">
@@ -66,7 +67,10 @@ function renderTask(task) {
     </div>
   `;
 
-  card.querySelector('.complete-button').onclick = () => {
+  card.innerHTML = taskHTML;
+
+  // Button event listeners
+  card.querySelector(".complete-button").onclick = () => {
     const newStatus = task.status === "Completed" ? "Not Touched" : "Completed";
     fetch("/update-status", {
       method: "PUT",
@@ -75,7 +79,7 @@ function renderTask(task) {
     }).then(loadTasks);
   };
 
-  card.querySelector('.delete-button').onclick = () => {
+  card.querySelector(".delete-button").onclick = () => {
     fetch("/delete-task", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
