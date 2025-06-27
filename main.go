@@ -138,7 +138,7 @@ func getAllTasks() ([]Task, error) {
 	}
 	defer rows.Close()
 
-	var tasks []Task
+	tasks := []Task{}
 	for rows.Next() {
 		var t Task
 		err := rows.Scan(&t.ID, &t.Title, &t.Description, &t.Owner, &t.Status, &t.CreatedAt)
